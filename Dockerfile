@@ -1,4 +1,3 @@
-# syntax = docker/dockerfile:1.3
 FROM python:3.8.9
 WORKDIR /app
 COPY . .
