@@ -3,9 +3,32 @@ from typing import List, Optional
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlalchemy.orm import Session
 
+# https://iq-inc.com/importerror-attempted-relative-import/
 import crud, models, schemas
 from database import SessionLocal, engine
+import logging
 
+# from pygelf import GelfUdpHandler
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger()
+# logger.addHandler(GelfUdpHandler(host='seq', port=80))
+
+import seqlog
+seqlog.set_global_log_properties(
+    ApplicationName="FastAPI-Server",
+    Environment="Docker-Compose"
+)
+seqlog.log_to_seq(
+   server_url="http://seq",
+   level=logging.INFO,
+   batch_size=10,
+   auto_flush_timeout=10,  # seconds
+   override_root_logger=True
+)
+
+
+
+logging.info("创建数据库表")
 models.Base.metadata.create_all(bind=engine) # 创建数据库表
 
 # Denpendency
@@ -21,6 +44,18 @@ app = FastAPI(title='Python API 示例',description='简单例子')
 
 @app.get("/",summary='接口1注释',description='接口1描述',tags=['Hello World'])
 def read_root():
+    logging.info("Hello, World!")
+    try:
+        result = 2 / 0
+    except Exception as exception:
+        logging.exception("We got an exception")
+
+    logging.debug("A log message in level debug")
+    logging.info("A log message in level info")
+    logging.warning("A log message in level warning")
+    logging.error("A log message in level error")
+    logging.critical("A log message in level critical")
+    logging.info("Hello, {name}!", name="World")
     return {"Hello": "World"}
 
 @app.get("/items/{item_id}",summary='接口2注释',description='接口2描述',tags=['Hello World'])
@@ -32,6 +67,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+    logging.info("创建了一个用户： {name}!", name=user.email)
     return crud.create_user(db=db, user=user)
 
 @app.get("/users/", response_model=List[schemas.User], summary='获取用户列表',description='获取用户列表',tags=['数据库操作'])
