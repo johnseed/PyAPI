@@ -7,9 +7,14 @@ services:
     build:
       context: fastapi-server
       dockerfile: Dockerfile
+    depends_on:
+      - zipkin
+      - seq
   fastapi-server-dapr:
     image: daprio/daprd:latest
-    command: [ "./daprd", "-app-id", "fastapi-server", "-app-port", "8000"]
+    command: [ "./daprd", "-app-id", "fastapi-server", "-app-port", "8000", "-config", "/dapr/config.yaml"]
+    volumes:
+      - "./dapr/:/dapr/"    
     depends_on:
       - fastapi-server
     network_mode: "service:fastapi-server"
@@ -23,8 +28,26 @@ services:
       - fastapi-server
   fastapi-client-dapr:
     image: daprio/daprd:latest
-    command: [ "./daprd", "-app-id", "fastapi-client"]
+    command: [ "./daprd", "-app-id", "fastapi-client", "-config", "/dapr/config.yaml"]
+    volumes:
+      - "./dapr/:/dapr/"
     depends_on:
       - fastapi-client
     network_mode: "service:fastapi-client"
 
+  zipkin:
+      image: "openzipkin/zipkin:latest"
+      ports:
+        - "9411:9411"
+  seq:
+        image: "datalust/seq:2021.3.6651"
+        ports:
+            - "5341:80"
+        healthcheck:
+          test: curl -f http://127.0.0.1 || exit 1
+          interval: 3s
+          timeout: 10s
+          retries: 10
+          start_period: 10s
+        environment:
+            ACCEPT_EULA: Y
