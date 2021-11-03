@@ -1,0 +1,30 @@
+version: '3.4'
+services:
+  fastapi-server:
+    image: fastapi-server
+    ports:
+      - "8000:8000"
+    build:
+      context: fastapi-server
+      dockerfile: Dockerfile
+  fastapi-server-dapr:
+    image: daprio/daprd:latest
+    command: [ "./daprd", "-app-id", "fastapi-server", "-app-port", "8000"]
+    depends_on:
+      - fastapi-server
+    network_mode: "service:fastapi-server"
+  
+  fastapi-client:
+    image: fastapi-client
+    build:
+      context: fastapi-client
+      dockerfile: Dockerfile
+    depends_on:
+      - fastapi-server
+  fastapi-client-dapr:
+    image: daprio/daprd:latest
+    command: [ "./daprd", "-app-id", "fastapi-client"]
+    depends_on:
+      - fastapi-client
+    network_mode: "service:fastapi-client"
+
