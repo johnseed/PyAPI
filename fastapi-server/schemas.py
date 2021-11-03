@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class ItemBase(BaseModel):
     title: str
@@ -16,16 +16,16 @@ class Item(ItemBase):
         orm_mode = True
 
 class UserBase(BaseModel):
-    email: str
+    email: str = Field(description="邮箱")
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(description="密码")
 
 
 class User(UserBase):
-    id: int
-    is_active: bool
+    id: int = Field(description="用户Id")
+    is_active: bool = Field(description="是否启用")
     items: List[Item] = []
 
     class Config:
