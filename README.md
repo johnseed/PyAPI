@@ -1,6 +1,6 @@
 # Python API
 FastAPI 示例
- 
+[https://fastapi.tiangolo.com/tutorial/sql-databases/](https://fastapi.tiangolo.com/tutorial/sql-databases/)
 ## 依赖
 ### 离线安装依赖包
 在fastapi-client和fastapi-server目录下执行  
