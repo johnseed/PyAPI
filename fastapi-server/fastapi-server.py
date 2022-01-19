@@ -1,8 +1,13 @@
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.openapi.docs import (
+    get_redoc_html,
+    get_swagger_ui_html,
+    get_swagger_ui_oauth2_redirect_html,
+)
 from sqlalchemy.orm import Session
-
+from fastapi.staticfiles import StaticFiles
 # https://iq-inc.com/importerror-attempted-relative-import/
 import crud, models, schemas
 from database import SessionLocal, engine
@@ -27,7 +32,6 @@ seqlog.log_to_seq(
 )
 
 
-
 logging.info("创建数据库表")
 models.Base.metadata.create_all(bind=engine) # 创建数据库表
 
@@ -39,7 +43,31 @@ def get_db():
     finally:
         db.close()
 
-app = FastAPI(title='Python API 示例',description='简单例子')
+app = FastAPI(title='Python API 示例',description='简单例子', docs_url=None, redoc_url=None)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+        swagger_js_url="/static/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui.css",
+    )
+
+@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+async def swagger_ui_redirect():
+    return get_swagger_ui_oauth2_redirect_html()
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_html():
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - ReDoc",
+        redoc_js_url="/static/redoc.standalone.js",
+    )
 
 
 @app.get("/",summary='接口1注释',description='接口1描述',tags=['Hello World'])
