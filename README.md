@@ -2,7 +2,7 @@
 FastAPI 示例
 [https://fastapi.tiangolo.com/tutorial/sql-databases/](https://fastapi.tiangolo.com/tutorial/sql-databases/)
 ## 依赖
-### 离线安装依赖包
+### 离线安装pip依赖包
 在fastapi-client和fastapi-server目录下执行  
 ```bash
     # 下载pip包
@@ -12,7 +12,17 @@ FastAPI 示例
     # 测试离线包
     $ docker run --rm --name pip_install -v $(pwd):/app -w /app python:3.8.9 pip3 install --no-index --find-links=libs -r requirements.txt
 ```
+### Conda安装环境
+    $ conda create -n satellite -c conda-forge conda-pack cartopy python=3.8 fastapi h5py netCDF4 pyhdf seaborn seqlog sqlalchemy uvicorn[standard]
+`conda-pack`将当前conda环境打包
+### [确认当前使用的python版本支持哪些后缀的库能被import](https://blog.csdn.net/XCCCCZ/article/details/111089151)
+```python
+import importlib.machinery
+print(importlib.machinery.all_suffixes())
+```
 
+## 手动启动
+    $ uvicorn --host 0.0.0.0 --port 8000 fastapi-server:app
 ## 运行
 
 ### 运行单个程序
